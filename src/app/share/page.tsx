@@ -4,8 +4,6 @@ import { useMemo } from "react";
 import { useEntries } from "@/hooks/use-entries";
 import {
   SummaryCards,
-  StatusBanner,
-  LatestUpdate,
   MonthlySummary,
   ProgressSection,
 } from "@/components/dashboard";
@@ -104,8 +102,6 @@ export default function SharePage() {
           remainingToMax={remainingToMax}
         />
 
-        <StatusBanner message={status.message} kind={status.kind} />
-
         <MonthlySummary
           usedHours={usedHours}
           extraHours={extraHoursUsed}
@@ -113,8 +109,6 @@ export default function SharePage() {
         />
 
         <ProgressSection usedHours={usedHours} />
-
-        <LatestUpdate entries={entries} month={month} year={year} />
 
         <Card>
           <CardHeader>

@@ -54,16 +54,6 @@ export function TimeEntryForm({ onSubmit }: TimeEntryFormProps) {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="taskTitle">Task title</Label>
-          <Input
-            id="taskTitle"
-            value={taskTitle}
-            onChange={(e) => setTaskTitle(e.target.value)}
-            placeholder="e.g. API integration"
-            required
-          />
-        </div>
-        <div className="space-y-2">
           <Label htmlFor="hours">Hours</Label>
           <Input
             id="hours"
@@ -73,6 +63,16 @@ export function TimeEntryForm({ onSubmit }: TimeEntryFormProps) {
             value={hours}
             onChange={(e) => setHours(e.target.value)}
             placeholder="e.g. 1.5"
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="taskTitle">Task title</Label>
+          <Input
+            id="taskTitle"
+            value={taskTitle}
+            onChange={(e) => setTaskTitle(e.target.value)}
+            placeholder="e.g. API integration"
             required
           />
         </div>

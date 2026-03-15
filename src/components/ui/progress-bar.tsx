@@ -7,7 +7,7 @@ interface ProgressBarProps {
   value: number;
   max: number;
   className?: string;
-  tone?: "default" | "warning" | "danger";
+  tone?: "default" | "success" | "warning" | "danger";
 }
 
 export function ProgressBar({
@@ -27,7 +27,9 @@ export function ProgressBar({
       ? "bg-destructive/80"
       : tone === "warning"
         ? "bg-amber-500"
-        : "bg-primary";
+        : tone === "success"
+          ? "bg-emerald-500"
+          : "bg-primary";
 
   return (
     <div className={cn("space-y-1.5", className)}>
@@ -35,7 +37,7 @@ export function ProgressBar({
         <span>{label}</span>
         <span className="tabular-nums">
           {value.toFixed(1)}h{" "}
-          <span className="text-[11px] text-muted-foreground/80">
+          <span className="text-xs text-muted-foreground/80">
             / {max.toFixed(1)}h
           </span>
         </span>
@@ -49,7 +51,7 @@ export function ProgressBar({
           style={{ width: `${pct}%` }}
         />
         {overflow && (
-          <div className="absolute inset-y-0 right-0 flex items-center pr-1 text-[10px] font-medium text-destructive">
+          <div className="absolute inset-y-0 right-0 flex items-center pr-1 text-xs font-medium text-destructive">
             +{(value - max).toFixed(1)}h
           </div>
         )}

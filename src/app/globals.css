@@ -120,10 +120,30 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    @apply font-sans;
+  }
   body {
     @apply bg-background text-foreground;
   }
-  html {
-    @apply font-sans;
+  /* Minimum font size 14px – all text at least 14px */
+  .text-xs {
+    font-size: 14px;
+  }
+  body {
+    font-size: 14px;
+  }
+}
+
+@layer utilities {
+  /* Force any small utility to 14px */
+  .text-\[10px\],
+  .text-\[11px\],
+  .text-\[12px\],
+  .text-\[13px\],
+  .text-\[0\.75rem\],
+  .text-\[0\.8rem\],
+  .text-\[0\.8125rem\] {
+    font-size: 14px !important;
   }
 }

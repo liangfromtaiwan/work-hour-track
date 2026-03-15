@@ -17,11 +17,16 @@ export const metadata: Metadata = {
   description: "Track monthly contract and extra work hours",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params?: Promise<Record<string, string | string[]>>;
 }>) {
+  // Next.js 15+: params is a Promise; unwrap so it is not enumerated as Promise
+  if (params) await params;
+
   return (
     <html lang="en">
       <body
