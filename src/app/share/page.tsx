@@ -16,6 +16,7 @@ import {
 } from "@/lib/hours-calc";
 import type { MonthYear } from "@/types/time-entry";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ReadOnlyTimeEntryTable } from "@/components/share/read-only-table";
 
 function getCurrentMonthYear(): MonthYear {
@@ -64,60 +65,106 @@ export default function SharePage() {
   if (!mounted) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-muted/30">
-        <p className="text-sm text-muted-foreground">Loading report…</p>
+        <p className="text-sm text-muted-foreground">Loading…</p>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <header className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Work hours report
+            Work hours
           </h1>
           <p className="text-sm text-muted-foreground">
-            Employer view · Read-only summary for {formatMonthLabel(monthYear)}
+            Read-only report · {formatMonthLabel(monthYear)}
           </p>
-          {lastUpdated && (
-            <p className="text-xs text-muted-foreground">
-              Last updated:{" "}
-              <span className="font-medium text-foreground">
-                {new Date(lastUpdated).toLocaleString("en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </span>
-            </p>
-          )}
         </header>
 
-        <SummaryCards
-          usedHours={usedHours}
-          remainingContract={remainingContract}
-          extraHoursUsed={extraHoursUsed}
-          remainingToMax={remainingToMax}
-        />
+        <Tabs defaultValue="15h" className="w-full">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-muted-foreground">
+              {formatMonthLabel(monthYear)}
+            </p>
+            <TabsList className="grid w-full max-w-md grid-cols-2 sm:w-auto">
+              <TabsTrigger value="15h">15h Contract</TabsTrigger>
+              <TabsTrigger value="30h">30h Max</TabsTrigger>
+            </TabsList>
+          </div>
+          <TabsContent value="15h" className="mt-6 space-y-8">
+            <ProgressSection usedHours={usedHours} focus="contract" />
+            <SummaryCards
+              usedHours={usedHours}
+              remainingContract={remainingContract}
+              extraHoursUsed={extraHoursUsed}
+              remainingToMax={remainingToMax}
+              focus="contract"
+            />
 
-        <MonthlySummary
-          usedHours={usedHours}
-          extraHours={extraHoursUsed}
-          status={status}
-        />
+            <MonthlySummary
+              usedHours={usedHours}
+              extraHours={extraHoursUsed}
+              status={status}
+            />
 
-        <ProgressSection usedHours={usedHours} />
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Time entries (read-only)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ReadOnlyTimeEntryTable entries={entries} month={month} year={year} />
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Time entries</CardTitle>
+                {lastUpdated && (
+                  <p className="text-xs text-muted-foreground font-normal">
+                    Read-only · Last updated:{" "}
+                    {new Date(lastUpdated).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                )}
+              </CardHeader>
+              <CardContent>
+                <ReadOnlyTimeEntryTable entries={entries} month={month} year={year} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="30h" className="mt-6 space-y-8">
+            <ProgressSection usedHours={usedHours} focus="max" />
+            <SummaryCards
+              usedHours={usedHours}
+              remainingContract={remainingContract}
+              extraHoursUsed={extraHoursUsed}
+              remainingToMax={remainingToMax}
+              focus="max"
+            />
+            <MonthlySummary
+              usedHours={usedHours}
+              extraHours={extraHoursUsed}
+              status={status}
+            />
+            <Card>
+              <CardHeader>
+                <CardTitle>Time entries</CardTitle>
+                {lastUpdated && (
+                  <p className="text-xs text-muted-foreground font-normal">
+                    Read-only · Last updated:{" "}
+                    {new Date(lastUpdated).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                )}
+              </CardHeader>
+              <CardContent>
+                <ReadOnlyTimeEntryTable entries={entries} month={month} year={year} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
