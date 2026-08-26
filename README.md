@@ -1,12 +1,8 @@
 # Work hours tracker
 
-Lightweight freelance work-hours tracking for monthly contract and cap visibility. Data is stored in **Supabase (PostgreSQL)** when environment variables are set.
+Lightweight freelance work-hours tracking with per-month totals. Data is stored in **Supabase (PostgreSQL)** when environment variables are set.
 
-## Contract rules
-
-- **Monthly contract:** 15 hours  
-- **Monthly max:** 30 hours  
-- Over 15h requires discussion with the employer before more work.
+There is no monthly hour cap — hours are logged and totalled per month, with no contract or maximum limit tracking.
 
 ## Supabase setup
 

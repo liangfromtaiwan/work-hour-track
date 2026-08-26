@@ -2,21 +2,10 @@
 
 import { useMemo } from "react";
 import { useEntries } from "@/hooks/use-entries";
-import {
-  SummaryCards,
-  MonthlySummary,
-  ProgressSection,
-} from "@/components/dashboard";
-import {
-  getExtraHoursUsed,
-  getRemainingContractHours,
-  getRemainingToMax,
-  getStatusInfo,
-  getUsedHours,
-} from "@/lib/hours-calc";
+import { SummaryCards } from "@/components/dashboard";
+import { getMonthEntries } from "@/lib/hours-calc";
 import type { MonthYear } from "@/types/time-entry";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ReadOnlyTimeEntryTable } from "@/components/share/read-only-table";
 
 function getCurrentMonthYear(): MonthYear {
@@ -36,23 +25,14 @@ export default function SharePage() {
   const monthYear = getCurrentMonthYear();
   const { month, year } = monthYear;
 
-  const usedHours = useMemo(
-    () => getUsedHours(entries, month, year),
+  const monthEntries = useMemo(
+    () => getMonthEntries(entries, month, year),
     [entries, month, year]
   );
-  const remainingContract = useMemo(
-    () => getRemainingContractHours(usedHours),
-    [usedHours]
+  const usedHours = useMemo(
+    () => monthEntries.reduce((sum, e) => sum + e.hours, 0),
+    [monthEntries]
   );
-  const extraHoursUsed = useMemo(
-    () => getExtraHoursUsed(usedHours),
-    [usedHours]
-  );
-  const remainingToMax = useMemo(
-    () => getRemainingToMax(usedHours),
-    [usedHours]
-  );
-  const status = useMemo(() => getStatusInfo(usedHours), [usedHours]);
 
   const lastUpdated = useMemo(() => {
     if (!entries.length) return null;
@@ -82,91 +62,31 @@ export default function SharePage() {
           </p>
         </header>
 
-        <Tabs defaultValue="15h" className="w-full">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">
-              {formatMonthLabel(monthYear)}
-            </p>
-            <TabsList className="grid w-full max-w-md grid-cols-2 sm:w-auto">
-              <TabsTrigger value="15h">15h Contract</TabsTrigger>
-              <TabsTrigger value="30h">30h Max</TabsTrigger>
-            </TabsList>
-          </div>
-          <TabsContent value="15h" className="mt-6 space-y-8">
-            <ProgressSection usedHours={usedHours} focus="contract" />
-            <SummaryCards
-              usedHours={usedHours}
-              remainingContract={remainingContract}
-              extraHoursUsed={extraHoursUsed}
-              remainingToMax={remainingToMax}
-              focus="contract"
-            />
+        <div className="space-y-8">
+          <SummaryCards usedHours={usedHours} entryCount={monthEntries.length} />
 
-            <MonthlySummary
-              usedHours={usedHours}
-              extraHours={extraHoursUsed}
-              status={status}
-            />
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Time entries</CardTitle>
-                {lastUpdated && (
-                  <p className="text-xs text-muted-foreground font-normal">
-                    Read-only · Last updated:{" "}
-                    {new Date(lastUpdated).toLocaleString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                )}
-              </CardHeader>
-              <CardContent>
-                <ReadOnlyTimeEntryTable entries={entries} month={month} year={year} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="30h" className="mt-6 space-y-8">
-            <ProgressSection usedHours={usedHours} focus="max" />
-            <SummaryCards
-              usedHours={usedHours}
-              remainingContract={remainingContract}
-              extraHoursUsed={extraHoursUsed}
-              remainingToMax={remainingToMax}
-              focus="max"
-            />
-            <MonthlySummary
-              usedHours={usedHours}
-              extraHours={extraHoursUsed}
-              status={status}
-            />
-            <Card>
-              <CardHeader>
-                <CardTitle>Time entries</CardTitle>
-                {lastUpdated && (
-                  <p className="text-xs text-muted-foreground font-normal">
-                    Read-only · Last updated:{" "}
-                    {new Date(lastUpdated).toLocaleString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                )}
-              </CardHeader>
-              <CardContent>
-                <ReadOnlyTimeEntryTable entries={entries} month={month} year={year} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+          <Card>
+            <CardHeader>
+              <CardTitle>Time entries</CardTitle>
+              {lastUpdated && (
+                <p className="text-xs text-muted-foreground font-normal">
+                  Read-only · Last updated:{" "}
+                  {new Date(lastUpdated).toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              )}
+            </CardHeader>
+            <CardContent>
+              <ReadOnlyTimeEntryTable entries={entries} month={month} year={year} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
 }
-
