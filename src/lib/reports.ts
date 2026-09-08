@@ -3,6 +3,7 @@ import type { TimeEntry } from "@/types/time-entry";
 
 export interface Report {
   id: string;
+  name: string;
   contractHours: number;
   maxHours: number;
   shareToken: string;
@@ -11,6 +12,7 @@ export interface Report {
 
 interface DbReport {
   id: string;
+  name: string | null;
   contract_hours: number;
   max_hours: number;
   share_token: string;
@@ -31,11 +33,38 @@ interface DbTimeEntry {
 function mapReport(row: DbReport): Report {
   return {
     id: row.id,
+    name: row.name ?? row.share_token,
     contractHours: row.contract_hours,
     maxHours: row.max_hours,
     shareToken: row.share_token,
     lastUpdated: row.last_updated,
   };
+}
+
+export async function fetchReports(): Promise<Report[]> {
+  const { data, error } = await supabase
+    .from("reports")
+    .select("*")
+    .order("name", { ascending: true }) as { data: DbReport[] | null; error: unknown };
+
+  if (error || !data) return [];
+  return data.map(mapReport);
+}
+
+export async function createReport(name: string): Promise<Report> {
+  const shareToken = `${name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "") || "project"}-${crypto.randomUUID().slice(0, 8)}`;
+  const { data, error } = await supabase
+    .from("reports")
+    .insert({ name: name.trim(), share_token: shareToken, contract_hours: 0, max_hours: 0 })
+    .select("*")
+    .single<DbReport>();
+
+  if (error || !data) throw new Error("Could not create project");
+  return mapReport(data);
 }
 
 function mapEntry(row: DbTimeEntry): TimeEntry {
@@ -70,7 +99,7 @@ export async function fetchEntriesForReport(reportId: string): Promise<TimeEntry
     .select("*")
     .eq("report_id", reportId)
     .order("date", { ascending: true })
-    .order("created_at", { ascending: true }) as { data: DbTimeEntry[] | null; error: any };
+    .order("created_at", { ascending: true }) as { data: DbTimeEntry[] | null; error: unknown };
 
   if (error || !data) {
     return [];
@@ -130,4 +159,3 @@ async function touchReport(reportId: string) {
     .update({ last_updated: new Date().toISOString() })
     .eq("id", reportId);
 }
-

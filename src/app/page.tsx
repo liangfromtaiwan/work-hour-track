@@ -2,7 +2,7 @@
 
 import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChartColumn } from "lucide-react";
 import { useEntries } from "@/hooks/use-entries";
 import {
@@ -13,10 +13,12 @@ import {
   ProjectFilter,
 } from "@/components/dashboard";
 import { getMonthEntries, getYearHours } from "@/lib/hours-calc";
+import { useProjects } from "@/hooks/use-projects";
 import type { MonthYear } from "@/types/time-entry";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
-import { getProject, parseProjectKey, type ProjectKey } from "@/lib/projects";
+
+const DEFAULT_PROJECT = process.env.NEXT_PUBLIC_DEFAULT_SHARE_TOKEN ?? "demo-report";
 
 function getCurrentMonthYear(): MonthYear {
   const d = new Date();
@@ -33,11 +35,11 @@ function LoadingScreen() {
 
 function HomeContent() {
   const searchParams = useSearchParams();
-  const [projectKey, setProjectKey] = useState<ProjectKey>(() =>
-    parseProjectKey(searchParams.get("project"))
-  );
-  const project = getProject(projectKey);
-  const { entries, add, update, remove, mounted } = useEntries(project.shareToken);
+  const router = useRouter();
+  const [shareToken, setShareToken] = useState(() => searchParams.get("project") ?? DEFAULT_PROJECT);
+  const { projects, loading: projectsLoading, addProject } = useProjects();
+  const project = projects.find((item) => item.shareToken === shareToken);
+  const { entries, add, update, remove, mounted } = useEntries(shareToken);
   const [monthYear, setMonthYear] = useState<MonthYear>(getCurrentMonthYear);
 
   const { month, year } = monthYear;
@@ -59,7 +61,7 @@ function HomeContent() {
     add(data);
   };
 
-  if (!mounted) {
+  if (!mounted || projectsLoading) {
     return <LoadingScreen />;
   }
 
@@ -72,11 +74,11 @@ function HomeContent() {
               Work hours
             </h1>
             <p className="text-sm text-muted-foreground">
-              {project.name} hours overview
+              {project?.name ?? "Project"} hours overview
             </p>
           </div>
           <Link
-            href={`/analytics?project=${projectKey}`}
+            href={`/analytics?project=${shareToken}`}
             className={buttonVariants({ variant: "outline" })}
           >
             <ChartColumn data-icon="inline-start" />
@@ -85,7 +87,15 @@ function HomeContent() {
         </header>
 
         <div className="flex flex-wrap gap-4">
-          <ProjectFilter value={projectKey} onChange={setProjectKey} />
+          <ProjectFilter
+            projects={projects}
+            value={shareToken}
+            onAdd={addProject}
+            onChange={(nextToken) => {
+              setShareToken(nextToken);
+              router.replace(`/?project=${encodeURIComponent(nextToken)}`);
+            }}
+          />
           <MonthFilter value={monthYear} onChange={setMonthYear} />
         </div>
 
