@@ -9,16 +9,29 @@ import {
 
 interface SummaryCardsProps {
   usedHours: number;
+  yearHours: number;
+  currentYear: number;
   entryCount: number;
 }
 
-export function SummaryCards({ usedHours, entryCount }: SummaryCardsProps) {
+export function SummaryCards({
+  usedHours,
+  yearHours,
+  currentYear,
+  entryCount,
+}: SummaryCardsProps) {
   const cards = [
     {
       key: "hours",
       title: "Hours this month",
       value: usedHours.toFixed(1),
       sub: "logged hours",
+    },
+    {
+      key: "year-hours",
+      title: "Hours this year",
+      value: yearHours.toFixed(1),
+      sub: `${currentYear} logged hours`,
     },
     {
       key: "entries",
@@ -29,7 +42,7 @@ export function SummaryCards({ usedHours, entryCount }: SummaryCardsProps) {
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid gap-4 sm:grid-cols-3">
       {cards.map((card) => (
         <Card key={card.key} size="sm">
           <CardHeader className="pb-1">

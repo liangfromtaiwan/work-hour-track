@@ -32,6 +32,16 @@ export function getUsedHours(
 }
 
 /**
+ * Sum of all entry hours in the given calendar year.
+ */
+export function getYearHours(entries: TimeEntry[], year: number): number {
+  return entries.reduce((sum, entry) => {
+    const entryYear = Number(entry.date.split("-")[0]);
+    return entryYear === year ? sum + entry.hours : sum;
+  }, 0);
+}
+
+/**
  * Cumulative monthly total up to and including each entry (for table).
  */
 export function getCumulativeTotals(

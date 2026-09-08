@@ -8,7 +8,7 @@ import {
   TimeEntryForm,
   TimeEntryTable,
 } from "@/components/dashboard";
-import { getMonthEntries } from "@/lib/hours-calc";
+import { getMonthEntries, getYearHours } from "@/lib/hours-calc";
 import type { MonthYear } from "@/types/time-entry";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -29,6 +29,11 @@ export default function Home() {
   const usedHours = useMemo(
     () => monthEntries.reduce((sum, e) => sum + e.hours, 0),
     [monthEntries]
+  );
+  const currentYear = new Date().getFullYear();
+  const yearHours = useMemo(
+    () => getYearHours(entries, currentYear),
+    [entries, currentYear]
   );
 
   const handleSubmit = (data: Parameters<typeof add>[0]) => {
@@ -60,6 +65,8 @@ export default function Home() {
         <div className="space-y-8">
           <SummaryCards
             usedHours={usedHours}
+            yearHours={yearHours}
+            currentYear={currentYear}
             entryCount={monthEntries.length}
           />
           <Card>

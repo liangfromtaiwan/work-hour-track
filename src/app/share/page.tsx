@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useEntries } from "@/hooks/use-entries";
 import { SummaryCards } from "@/components/dashboard";
-import { getMonthEntries } from "@/lib/hours-calc";
+import { getMonthEntries, getYearHours } from "@/lib/hours-calc";
 import type { MonthYear } from "@/types/time-entry";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReadOnlyTimeEntryTable } from "@/components/share/read-only-table";
@@ -25,14 +25,9 @@ export default function SharePage() {
   const monthYear = getCurrentMonthYear();
   const { month, year } = monthYear;
 
-  const monthEntries = useMemo(
-    () => getMonthEntries(entries, month, year),
-    [entries, month, year]
-  );
-  const usedHours = useMemo(
-    () => monthEntries.reduce((sum, e) => sum + e.hours, 0),
-    [monthEntries]
-  );
+  const monthEntries = getMonthEntries(entries, month, year);
+  const usedHours = monthEntries.reduce((sum, entry) => sum + entry.hours, 0);
+  const yearHours = getYearHours(entries, year);
 
   const lastUpdated = useMemo(() => {
     if (!entries.length) return null;
@@ -63,7 +58,12 @@ export default function SharePage() {
         </header>
 
         <div className="space-y-8">
-          <SummaryCards usedHours={usedHours} entryCount={monthEntries.length} />
+          <SummaryCards
+            usedHours={usedHours}
+            yearHours={yearHours}
+            currentYear={year}
+            entryCount={monthEntries.length}
+          />
 
           <Card>
             <CardHeader>
