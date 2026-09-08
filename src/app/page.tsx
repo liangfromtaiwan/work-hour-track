@@ -11,6 +11,7 @@ import {
   TimeEntryForm,
   TimeEntryTable,
   ProjectFilter,
+  ProjectActions,
 } from "@/components/dashboard";
 import { getMonthEntries, getYearHours } from "@/lib/hours-calc";
 import { useProjects } from "@/hooks/use-projects";
@@ -37,7 +38,7 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [shareToken, setShareToken] = useState(() => searchParams.get("project") ?? DEFAULT_PROJECT);
-  const { projects, loading: projectsLoading, addProject } = useProjects();
+  const { projects, loading: projectsLoading, addProject, renameProject, removeProject } = useProjects();
   const project = projects.find((item) => item.shareToken === shareToken);
   const { entries, add, update, remove, mounted } = useEntries(shareToken);
   const [monthYear, setMonthYear] = useState<MonthYear>(getCurrentMonthYear);
@@ -70,11 +71,29 @@ function HomeContent() {
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <header className="flex items-start justify-between gap-4">
           <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              Work hours
-            </h1>
+            <div className="flex items-center gap-1">
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                {project?.name ?? "Project"}
+              </h1>
+              {project && (
+                <ProjectActions
+                  key={project.id}
+                  project={project}
+                  canDelete={projects.length > 1}
+                  onRename={renameProject}
+                  onDelete={async (id) => {
+                    const nextProject = projects.find((item) => item.id !== id);
+                    await removeProject(id);
+                    if (nextProject) {
+                      setShareToken(nextProject.shareToken);
+                      router.replace(`/?project=${encodeURIComponent(nextProject.shareToken)}`);
+                    }
+                  }}
+                />
+              )}
+            </div>
             <p className="text-sm text-muted-foreground">
-              {project?.name ?? "Project"} hours overview
+              Work hours overview
             </p>
           </div>
           <Link

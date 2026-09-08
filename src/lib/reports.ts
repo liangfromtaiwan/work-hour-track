@@ -67,6 +67,23 @@ export async function createReport(name: string): Promise<Report> {
   return mapReport(data);
 }
 
+export async function renameReport(id: string, name: string): Promise<Report> {
+  const { data, error } = await supabase
+    .from("reports")
+    .update({ name: name.trim(), last_updated: new Date().toISOString() })
+    .eq("id", id)
+    .select("*")
+    .single<DbReport>();
+
+  if (error || !data) throw new Error("Could not rename project");
+  return mapReport(data);
+}
+
+export async function deleteReport(id: string): Promise<void> {
+  const { error } = await supabase.from("reports").delete().eq("id", id);
+  if (error) throw new Error("Could not delete project");
+}
+
 function mapEntry(row: DbTimeEntry): TimeEntry {
   return {
     id: row.id,

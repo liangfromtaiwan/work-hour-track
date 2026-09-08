@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { createReport, fetchReports, type Report } from "@/lib/reports";
+import { createReport, deleteReport, fetchReports, renameReport, type Report } from "@/lib/reports";
 
 const FALLBACK_PROJECTS: Report[] = [
   { id: "rinneface", name: "rinneFACE", shareToken: process.env.NEXT_PUBLIC_DEFAULT_SHARE_TOKEN ?? "demo-report", contractHours: 0, maxHours: 0, lastUpdated: "" },
@@ -25,5 +25,18 @@ export function useProjects() {
     return project;
   }, []);
 
-  return { projects, loading, addProject };
+  const renameProject = useCallback(async (id: string, name: string) => {
+    const project = await renameReport(id, name);
+    setProjects((current) => current
+      .map((item) => item.id === id ? project : item)
+      .sort((a, b) => a.name.localeCompare(b.name)));
+    return project;
+  }, []);
+
+  const removeProject = useCallback(async (id: string) => {
+    await deleteReport(id);
+    setProjects((current) => current.filter((item) => item.id !== id));
+  }, []);
+
+  return { projects, loading, addProject, renameProject, removeProject };
 }

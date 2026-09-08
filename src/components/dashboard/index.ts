@@ -5,3 +5,4 @@ export { TimeEntryTable } from "./time-entry-table";
 export { LatestUpdate } from "./latest-update";
 export { MonthlyHoursChart } from "./monthly-hours-chart";
 export { ProjectFilter } from "./project-filter";
+export { ProjectActions } from "./project-actions";
