@@ -13,30 +13,35 @@ import {
 const DEFAULT_SHARE_TOKEN =
   process.env.NEXT_PUBLIC_DEFAULT_SHARE_TOKEN ?? "demo-report";
 
-export function useEntries() {
+export function useEntries(shareToken = DEFAULT_SHARE_TOKEN) {
   const [entries, setEntriesState] = useState<TimeEntry[]>([]);
   const [reportId, setReportId] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [loadedShareToken, setLoadedShareToken] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
-        const report = await fetchReportByShareToken(DEFAULT_SHARE_TOKEN);
+        const report = await fetchReportByShareToken(shareToken);
         if (cancelled) return;
         setReportId(report.id);
         const data = await fetchEntriesForReport(report.id);
         if (cancelled) return;
         setEntriesState(data);
-      } finally {
-        if (!cancelled) setMounted(true);
+        setLoadedShareToken(shareToken);
+      } catch {
+        if (!cancelled) {
+          setEntriesState([]);
+          setReportId(null);
+          setLoadedShareToken(shareToken);
+        }
       }
     }
     load();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [shareToken]);
 
   const refresh = useCallback(async () => {
     if (!reportId) return;
@@ -75,13 +80,12 @@ export function useEntries() {
   );
 
   return {
-    entries: mounted ? entries : [],
-    mounted,
+    entries: loadedShareToken === shareToken ? entries : [],
+    mounted: loadedShareToken === shareToken,
     add,
     update,
     remove,
     refresh,
-    shareToken: DEFAULT_SHARE_TOKEN,
+    shareToken,
   };
 }
-

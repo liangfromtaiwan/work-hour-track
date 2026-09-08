@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ChartColumn } from "lucide-react";
 import { useEntries } from "@/hooks/use-entries";
 import {
@@ -9,19 +10,34 @@ import {
   MonthFilter,
   TimeEntryForm,
   TimeEntryTable,
+  ProjectFilter,
 } from "@/components/dashboard";
 import { getMonthEntries, getYearHours } from "@/lib/hours-calc";
 import type { MonthYear } from "@/types/time-entry";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
+import { getProject, parseProjectKey, type ProjectKey } from "@/lib/projects";
 
 function getCurrentMonthYear(): MonthYear {
   const d = new Date();
   return { month: d.getMonth() + 1, year: d.getFullYear() };
 }
 
-export default function Home() {
-  const { entries, add, update, remove, mounted } = useEntries();
+function LoadingScreen() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-muted/30">
+      <p className="text-sm text-muted-foreground">Loading…</p>
+    </div>
+  );
+}
+
+function HomeContent() {
+  const searchParams = useSearchParams();
+  const [projectKey, setProjectKey] = useState<ProjectKey>(() =>
+    parseProjectKey(searchParams.get("project"))
+  );
+  const project = getProject(projectKey);
+  const { entries, add, update, remove, mounted } = useEntries(project.shareToken);
   const [monthYear, setMonthYear] = useState<MonthYear>(getCurrentMonthYear);
 
   const { month, year } = monthYear;
@@ -44,11 +60,7 @@ export default function Home() {
   };
 
   if (!mounted) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/30">
-        <p className="text-sm text-muted-foreground">Loading…</p>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -60,16 +72,22 @@ export default function Home() {
               Work hours
             </h1>
             <p className="text-sm text-muted-foreground">
-              Monthly hours overview
+              {project.name} hours overview
             </p>
           </div>
-          <Link href="/analytics" className={buttonVariants({ variant: "outline" })}>
+          <Link
+            href={`/analytics?project=${projectKey}`}
+            className={buttonVariants({ variant: "outline" })}
+          >
             <ChartColumn data-icon="inline-start" />
             Monthly analysis
           </Link>
         </header>
 
-        <MonthFilter value={monthYear} onChange={setMonthYear} />
+        <div className="flex flex-wrap gap-4">
+          <ProjectFilter value={projectKey} onChange={setProjectKey} />
+          <MonthFilter value={monthYear} onChange={setMonthYear} />
+        </div>
 
         <div className="space-y-8">
           <SummaryCards
@@ -103,5 +121,13 @@ export default function Home() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <HomeContent />
+    </Suspense>
   );
 }
