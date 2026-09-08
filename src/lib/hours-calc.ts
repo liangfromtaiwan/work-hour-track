@@ -42,6 +42,22 @@ export function getYearHours(entries: TimeEntry[], year: number): number {
 }
 
 /**
+ * Total hours for each month in a calendar year, from January to December.
+ */
+export function getMonthlyHours(entries: TimeEntry[], year: number): number[] {
+  const totals = Array.from({ length: 12 }, () => 0);
+
+  for (const entry of entries) {
+    const [entryYear, entryMonth] = entry.date.split("-").map(Number);
+    if (entryYear === year && entryMonth >= 1 && entryMonth <= 12) {
+      totals[entryMonth - 1] += entry.hours;
+    }
+  }
+
+  return totals;
+}
+
+/**
  * Cumulative monthly total up to and including each entry (for table).
  */
 export function getCumulativeTotals(

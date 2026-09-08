@@ -64,7 +64,6 @@ export default function SharePage() {
             currentYear={year}
             entryCount={monthEntries.length}
           />
-
           <Card>
             <CardHeader>
               <CardTitle>Time entries</CardTitle>
